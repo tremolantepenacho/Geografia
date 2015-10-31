@@ -11,11 +11,7 @@ package geografia;
  */
 
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Locale;
-import java.io.FileInputStream;
+import java.io.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,6 +26,8 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.usermodel.Cell;
+
 
 public class Geografia {
 
@@ -40,12 +38,14 @@ public class Geografia {
 		// An excel file name. You can create a file name with a full
 		// path information.
 		//
-		String filename = "pobmun14.xlsx";
+		String filename = "pobmun14.xls";
 		//
 		// Create an ArrayList to store the data read from excel sheet.
 		//
 		List sheetData = new ArrayList();
 		FileInputStream fis = null;
+                ArrayList pueblos=new ArrayList();
+                FileWriter insertSQL=null;
 		try {
 			//
 			// Create a FileInputStream that will be use to read the
@@ -74,7 +74,6 @@ public class Geografia {
 				List data = new ArrayList();
 				while (cells.hasNext()) {
 					HSSFCell cell = (HSSFCell) cells.next();
-				//	System.out.println("Añadiendo Celda: " + cell.toString());
 					data.add(cell);
 				}
 				sheetData.add(data);
@@ -86,30 +85,65 @@ public class Geografia {
 				fis.close();
 			}
 		}
-		showExelData(sheetData);
+		obtieneDatos(sheetData,pueblos);
+                for (Object item : pueblos) {
+                    System.out.println(item);
+                }
+                llenaFichero(pueblos,insertSQL);
 	}
 
-	private static void showExelData(List sheetData) {
-		//
-		// Iterates the data and print it out to the console.
-		//
-		for (int i = 0; i < sheetData.size(); i++) {
+	private static void obtieneDatos(List sheetData, ArrayList pueblos) {
+		            
+                        Municipio nuevoMunicipio;
+                        String nomTemp;
+                        int codTemp,provTemp,pobTemp,homTemp,mujTemp;
+                        
+			for (int i = 3; i < sheetData.size(); i++) {
 			List list = (List) sheetData.get(i);
-			for (int j = 0; j < list.size(); j++) {
-				Cell cell = (Cell) list.get(j);
-				if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-					System.out.print(cell.getNumericCellValue());
-				} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-					System.out.print(cell.getRichStringCellValue());
-				} else if (cell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
-					System.out.print(cell.getBooleanCellValue());
-				}
-				if (j < list.size() - 1) {
-					System.out.print(", ");
-				}
+                       
+                            provTemp=Integer.parseInt(((Cell) list.get(0)).getStringCellValue());
+                            codTemp=Integer.parseInt(((Cell) list.get(2)).getStringCellValue());
+                            pobTemp=(int)((Cell) list.get(4)).getNumericCellValue();
+                            homTemp=(int)((Cell) list.get(5)).getNumericCellValue();
+                            mujTemp=(int)((Cell) list.get(6)).getNumericCellValue();
+                            nomTemp=((Cell) list.get(3)).getStringCellValue();
+
+                            nuevoMunicipio=new Municipio(provTemp,codTemp,pobTemp,homTemp,mujTemp,nomTemp);
+                            pueblos.add(nuevoMunicipio);
+			
 			}
-			System.out.println("");
+                        
+                        
 		}
+        private static void llenaFichero(ArrayList pueblos, FileWriter fich){
+        
+           
+            try
+             {
+                PrintWriter pw=null;
+                fich = new FileWriter("insertLocalidad.txt");
+                pw = new PrintWriter(fich);
+
+                
+                 for (Object item : pueblos) {
+                   // System.out.println(item);
+                    pw.println(item.insertLocalidad());
+                }
+                //for (int i = 0; i < 10; i++)
+                  //  pw.println("Linea " + i);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+               try {
+               // Nuevamente aprovechamos el finally para 
+               // asegurarnos que se cierra el fichero.
+               if (null != fich)
+                  fich.close();
+               } catch (Exception e2) {
+                  e2.printStackTrace();
+               }
+            }
+            }
 	}
-}
 

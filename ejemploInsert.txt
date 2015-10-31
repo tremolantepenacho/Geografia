@@ -1,0 +1,1 @@
+INSERT INTO "localidad" ("nombre", "cod", "provincia") VALUES ('torrent', '100','46');
