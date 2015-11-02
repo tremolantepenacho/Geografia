@@ -18,19 +18,24 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.usermodel.Cell;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 
 public class Geografia {
 
+    static Connection con  = null;
+    static Statement  st   = null;  
+    static ResultSet  res  = null; 
+    static String     sql  = null;
+    private static final String DBH = "jdbc:hsqldb:file:geografia";
 
 	public static void main(String[] args) throws Exception {
 
@@ -87,9 +92,14 @@ public class Geografia {
 		}
 		obtieneDatos(sheetData,pueblos);
                 for (Object item : pueblos) {
-                    System.out.println(item);
+                 //   System.out.println(item);
                 }
-                llenaFichero(pueblos,insertSQL);
+           //     llenaFichero(pueblos,insertSQL);
+                
+                loadHSQLDB();
+                connectDB();
+                createStatement();
+                insertData();
 	}
 
 	private static void obtieneDatos(List sheetData, ArrayList pueblos) {
@@ -127,7 +137,7 @@ public class Geografia {
                 
                  for (Object item : pueblos) {
                    // System.out.println(item);
-                    pw.println(item.insertLocalidad());
+                    pw.println(((Municipio)item).insertLocalidad());
                 }
                 //for (int i = 0; i < 10; i++)
                   //  pw.println("Linea " + i);
@@ -145,5 +155,89 @@ public class Geografia {
                }
             }
             }
-	}
+        
+         public static void loadHSQLDB()
+    {
+        System.out.println("* Starting...");
+        try
+        {
+            Class.forName("org.hsqldb.jdbcDriver"); //Load HSQLDB driver
+            System.out.println("* Loading HSQLDB driver...");
+        } 
+        catch(Exception e)
+        {  
+            System.err.println("ERROR: failed to load HSQLDB JDBC driver.");
+            e.printStackTrace();
+            return;  
+        } 
+    }
+    
+    public static void connectDB()
+    {
+        try
+        {   // Connect to the database or create if it don't exist 
+            con = DriverManager.getConnection(DBH); 
+            System.out.println("* Creating HSQLDB connection...");
+        }
+        catch(Exception e)
+        {
+            System.err.println("Error: " + e.getMessage());
+            return;
+        }
+    }
+    
+    public static void createStatement()
+    {
+        try
+        {
+            st  = con.createStatement(); 
+        }
+        catch (Exception e)
+        {  
+            System.err.println("Error: createStatement: " + e.getMessage());   
+            return;
+        }
+    }
+    
+    
+     public static void closeHSQLDB()
+    {
+        // Save temporal data and close
+        try
+        {
+            st = con.createStatement();  
+            st.executeUpdate("SHUTDOWN");  
+            st.close(); 
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error: save temporal data" + e.getMessage());
+        }
+        
+        try
+        {
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            return; 
+        }
+    }
+ 
+      public static void insertData()
+    {
+        try 
+        {   // Drop tables
+            st.executeUpdate("INSERT INTO \"localidad\" (\"nombre\".\"provincia\") VALUES ('gilipollia',46)");
+            
+            System.out.println("Insertandoprueba");
+        }
+        catch (Exception e)
+        {  
+            System.err.println("Warning: drop table: " + e.getMessage());   
+        }  
+    }
+}
 
