@@ -3,6 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+// http://programmaremobile.blogspot.com.es/2009/01/java-and-openoffice-base-db-through.html
+//http://digiassn.blogspot.com.es/2006/07/java-creating-jdbc-connection-to.html
 package geografia;
 
 /**
@@ -35,7 +38,7 @@ public class Geografia {
     static Statement  st   = null;  
     static ResultSet  res  = null; 
     static String     sql  = null;
-    private static final String DBH = "jdbc:hsqldb:file:geografia";
+    private static final String DBH = "jdbc:hsqldb:file:geografia/geografia";
 
 	public static void main(String[] args) throws Exception {
 
@@ -100,6 +103,7 @@ public class Geografia {
                 connectDB();
                 createStatement();
                 insertData();
+                closeHSQLDB();
 	}
 
 	private static void obtieneDatos(List sheetData, ArrayList pueblos) {
@@ -176,8 +180,9 @@ public class Geografia {
     {
         try
         {   // Connect to the database or create if it don't exist 
-            con = DriverManager.getConnection(DBH); 
+            con = DriverManager.getConnection(DBH,"SA", ""); 
             System.out.println("* Creating HSQLDB connection...");
+           
         }
         catch(Exception e)
         {
@@ -230,8 +235,7 @@ public class Geografia {
     {
         try 
         {   // Drop tables
-            st.executeUpdate("INSERT INTO \"localidad\" (\"nombre\".\"provincia\") VALUES ('gilipollia',46)");
-            
+            st.executeUpdate("INSERT INTO \"localidad\" (\"nombre\",\"provincia\") VALUES ('gilipollia',46)");
             System.out.println("Insertandoprueba");
         }
         catch (Exception e)
